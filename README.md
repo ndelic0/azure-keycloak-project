@@ -40,7 +40,7 @@ Before you can deploy the infrastructure and application, you’ll need to set u
 4. **GitHub Repository Secrets** - Set up the required GitHub repository secrets, including any Azure service principal credentials needed for Terraform.
 
 ## Directory Structure
-
+```bash
 azure-keycloak-project/
 │
 ├── ansible/
@@ -64,7 +64,7 @@ azure-keycloak-project/
 └── .github/
     └── workflows/
         └── deploy.yml                # GitHub Actions workflow file
-
+```
 ## Usage
 
 # Deploying the Infrastructure
