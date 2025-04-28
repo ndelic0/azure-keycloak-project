@@ -1,0 +1,18 @@
+---
+- name: Create directory for Docker Compose
+  file:
+    path: /opt/keycloak_project
+    state: directory
+    mode: '0755'
+
+- name: Copy Docker Compose file
+  copy:
+    src: docker-compose.yml
+    dest: /opt/keycloak_project/docker-compose.yml
+    mode: '0644'
+
+- name: Deploy containers with Docker Compose
+  shell: |
+    docker compose -f /opt/keycloak_project/docker-compose.yml up -d
+  args:
+    chdir: /opt/keycloak_project

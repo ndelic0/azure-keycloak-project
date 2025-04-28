@@ -1,0 +1,68 @@
+name: Deploy Infrastructure and Applications
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  deploy:
+    name: Deploy with Terraform and Ansible
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.5
+
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: terraform/
+
+      - name: Apply Terraform
+        run: terraform apply -auto-approve
+        working-directory: terraform/
+
+      - name: Install Ansible
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install ansible
+
+      - name: Generate dynamic Ansible inventory
+        run: |
+          terraform output -json > terraform_output.json
+          PUBLIC_IP=$(jq -r '.vm_public_ip.value' terraform_output.json)
+          echo "[web]" > ansible/inventory.ini
+          echo "$PUBLIC_IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> ansible/inventory.ini
+
+      - name: Wait for SSH to be available
+        run: |
+          PUBLIC_IP=$(jq -r '.vm_public_ip.value' terraform_output.json)
+          echo "Waiting for SSH on $PUBLIC_IP..."
+          for i in {1..10}; do
+            if ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@$PUBLIC_IP "echo SSH ready"; then
+              echo "SSH is available."
+              break
+            else
+              echo "SSH not ready yet, waiting..."
+              sleep 10
+            fi
+          done
+
+      - name: Save Terraform SSH private key to GitHub Secrets
+        run: |
+          terraform output -raw private_key_pem > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Run Ansible Playbook
+        run: |
+          ansible-playbook -i ansible/inventory.ini ansible/playbooks/site.yml

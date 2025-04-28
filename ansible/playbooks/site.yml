@@ -1,0 +1,14 @@
+---
+- name: Install Docker and Deploy Keycloak Project
+  hosts: web
+  become: true
+  roles:
+    - role: keycloak_project
+      tasks_from: install_docker
+
+- name: Deploy Keycloak containers
+  hosts: web
+  become: true
+  roles:
+    - role: keycloak_project
+      tasks_from: deploy_containers

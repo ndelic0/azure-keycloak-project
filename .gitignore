@@ -1,0 +1,30 @@
+# Terraform files
+*.tfstate
+*.tfstate.*
+.terraform/
+.crash/
+*.backup
+*.log
+terraform.tfvars
+override.tf
+override.tf.json
+
+# Ansible dynamic inventory
+ansible/hosts.ini
+
+# SSH keys
+id_rsa
+id_rsa.pub
+
+# Python
+__pycache__/
+*.pyc
+
+# System
+.DS_Store
+*.swp
+*.swo
+
+# GitHub Actions artifacts
+*.pem
+.env
